@@ -12,10 +12,12 @@ class EventModel(BaseModel):
     date: datetime | str = Field(default_factory=datetime.now)
     organizator: str = Field(min_length=3, default="Organizator")
     is_online: bool = Field(default=True)
-    participant: str = Field(min_length=6, max_length=60, default="Lastname Firstname Surname")    
+    participant: str | None = Field(min_length=6, max_length=60, default="Lastname Firstname Surname")    
 
     @field_validator("participant")
     def validate_participant(cls, value):
+        if value is None:
+            return value
         return validate_full_name(value)
 
     @field_validator("name")

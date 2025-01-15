@@ -8,8 +8,9 @@ from aiogram.client.default import DefaultBotProperties
 
 from config import config 
 from handlers.handlers import router
-from handlers.add_confs_handlers import add_conf_router
+from handlers.events_handlers import event_router
 from handlers.user_data_change_handlers import change_router
+from middlewares.admin_middleware import AdminMiddleware
 
 
 async def main():
@@ -17,7 +18,8 @@ async def main():
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(router)
     dp.include_router(change_router)
-    dp.include_router(add_conf_router)
+    dp.include_router(event_router)
+    dp.message.middleware.register(AdminMiddleware())
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 

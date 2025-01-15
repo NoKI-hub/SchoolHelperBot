@@ -2,20 +2,27 @@ from aiogram.filters.state import State, StatesGroup
 
 
 class UserStates(StatesGroup):
-    names_processing = State()
-    name_update = State()
-    conf_processing = State()
-    change = State()
-    base = State()
+    NAMES_PROCESSING = State()
+    NAME_UPDATE = State()
+    EVENT_PROCESS = State()
+    CHANGE = State()
+    BASE = State()
 
 class EventProcess(StatesGroup):
-    menu = State()
-    choose_event_type = State()
+    MENU = State()
+    CHOOSE_EVENT_TYPE = State()
+    CHOOSE_DELETE_TYPE = State()
     
     class Events(StatesGroup):
-        participant = State()
-        name = State()
-        date = State()
-        organizator = State()
-        is_online = State()
-        finish_add = State()
+        PARTICIPANT = State()
+        NAME = State()
+        DATE = State()
+        ORGANIZATOR = State()
+        IS_ONLINE = State()
+        FINISH_ADD = State()  
+
+    class DeleteBy(StatesGroup):
+        PARTICIPANT = State()
+        NAME = State()
+        DATE = State()
+        ORGANIZATOR = State()        

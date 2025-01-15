@@ -1,7 +1,7 @@
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 
-def create_format_keyboard():
+def create_format():
     builder = ReplyKeyboardBuilder()
     builder.button(text="Очный")
     builder.button(text="Дистанционный")
@@ -10,17 +10,7 @@ def create_format_keyboard():
     return builder.as_markup(resize_keyboard=True)
 
 
-def base_keyboard(is_admin: bool = False):
-    builder = ReplyKeyboardBuilder()
-    builder.button(text="Изменить ФИО")
-    builder.button(text="Мероприятия")
-    if is_admin:
-        builder.button(text="Получить отчет")
-    builder.adjust(2, 1)
-    return builder.as_markup(resize_keyboard=True)
-
-
-def event_menu_keyboard():
+def menu():
     builder = ReplyKeyboardBuilder()
     builder.button(text="Добавить мероприятие")
     builder.button(text="Удалить мероприятие")
@@ -32,15 +22,7 @@ def event_menu_keyboard():
     
 
 
-def change_name_keyboard():
-    builder = ReplyKeyboardBuilder()
-    builder.button(text="Изменить")
-    builder.button(text="Отмена")
-    builder.adjust(2)
-    return builder.as_markup(resize_keyboard=True)
-
-
-def event_type_keyboard():
+def type():
     builder = ReplyKeyboardBuilder()
     builder.button(text="Конференция")
     builder.button(text="Конкурс учителя")
@@ -50,7 +32,7 @@ def event_type_keyboard():
     return builder.as_markup(resize_keyboard=True)
 
 
-def end_or_add_keyboard():
+def end_or_add():
     builder = ReplyKeyboardBuilder()
     builder.button(text="Добавить еще")
     builder.button(text="Завершить")
@@ -58,16 +40,32 @@ def end_or_add_keyboard():
     return builder.as_markup(resize_keyboard=True)
 
 
-def cancel_keyboard():
+def delete_type():
     builder = ReplyKeyboardBuilder()
+    builder.button(text="По организатору")
+    builder.button(text="По дате")
+    builder.button(text="По участнику")
+    builder.button(text="По названию")
     builder.button(text="Отмена")
-    builder.adjust(1)
+    builder.adjust(2)
+    return builder.as_markup(resize_keyboard=True)
+
+
+def end_delete():
+    builder = ReplyKeyboardBuilder()
+    builder.button(text="Завершить удаление")
+    return builder.as_markup(resize_keyboard=True)
+
+
+def inline_confirm_delete(event_id: int):
+    builder = InlineKeyboardBuilder()
+    builder.button(text="Удалить", callback_data=f"delevent_{event_id}")
     return builder.as_markup(resize_keyboard=True)
     
 
-FORMAT_KEYBOARD = create_format_keyboard()
-CHANGE_NAME_KEYBOARD = change_name_keyboard()
-EVENT_MENU_KEYBOARD = event_menu_keyboard()
-EVENT_TYPE_KEYBOARD = event_type_keyboard()
-END_OR_ADD_KEYBOARD = end_or_add_keyboard()
-CANCEL_KEYBOARD = cancel_keyboard()
+FORMAT = create_format()
+MENU = menu()
+TYPE = type()
+END_OR_ADD = end_or_add()
+END_DELETE = end_delete()
+DELETE_TYPE = delete_type()

@@ -3,10 +3,8 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 
-from keyboards import  (FORMAT_KEYBOARD,
-                        EVENT_MENU_KEYBOARD,
-                        END_OR_ADD_KEYBOARD,
-                        CANCEL_KEYBOARD)
+from keyboards import event_keyboards
+from keyboards import keyboards
 from filters import StatesFilter, TextFilter
 from models.event_models import EventModel
 from states import EventProcess
@@ -22,74 +20,76 @@ data_router = Router()
                                  "Конкурс учителя",
                                  "Конкурс ученика",
                                  "Добавить еще"]),
-                     StatesFilter([EventProcess.choose_event_type,
-                                   EventProcess.Events.finish_add]))
+                     StatesFilter([EventProcess.CHOOSE_EVENT_TYPE,
+                                   EventProcess.Events.FINISH_ADD]))
 async def add_conf_starting(msg: Message, state: FSMContext):
     if msg.text == "Конкурс ученика":
-        result_state = EventProcess.Events.participant
+        result_text = "ФИО ученика:"
+        result_state = EventProcess.Events.PARTICIPANT
     else:
-        result_state = EventProcess.Events.name
+        result_text = "Название:"
+        result_state = EventProcess.Events.NAME
         await state.update_data(conference=EventModel(participant=None))
     await msg.answer("Введите данные", reply_markup=ReplyKeyboardRemove())
-    await msg.answer("Название:", reply_markup=CANCEL_KEYBOARD)
+    await msg.answer(result_text, reply_markup=keyboards.CANCEL)
     await state.set_state(result_state)
 
 
-@data_router.message(EventProcess.Events.participant)
+@data_router.message(EventProcess.Events.PARTICIPANT)
 async def add_participant(msg: Message, state: FSMContext):
     try:
         conference = EventModel(participant=msg.text)
     except ValidationError as e:
         await msg.answer(message_from_error(e))
-        await msg.answer("Проверьте правильность написания ФИО", reply_markup=CANCEL_KEYBOARD)
+        await msg.answer("Проверьте правильность написания ФИО", reply_markup=keyboards.CANCEL)
     else:
         await state.update_data(conference=conference)
-        await msg.answer("Название:", reply_markup=CANCEL_KEYBOARD)
-        await state.set_state(EventProcess.Events.name)
+        await msg.answer("Название:", reply_markup=keyboards.CANCEL)
+        await state.set_state(EventProcess.Events.NAME)
 
 
-@data_router.message(EventProcess.Events.name)
+@data_router.message(EventProcess.Events.NAME)
 async def add_conf_name(msg: Message, state: FSMContext):
     conference: EventModel = (await state.get_data()).get("conference")
     try:
         conference = EventModel(participant=conference.participant, name=msg.text)
     except ValidationError as e:
         await msg.answer(message_from_error(e))
-        await msg.answer("Проверьте правильность написания названия", reply_markup=CANCEL_KEYBOARD)
+        await msg.answer("Проверьте правильность написания названия", reply_markup=keyboards.CANCEL)
     else:
         await state.update_data(conference=conference)
-        await msg.answer("Дата проведения:", reply_markup=CANCEL_KEYBOARD)
-        await state.set_state(EventProcess.Events.date)
+        await msg.answer("Дата проведения в формате ДД.ММ.ГГГГ:", reply_markup=keyboards.CANCEL)
+        await state.set_state(EventProcess.Events.DATE)
 
 
-@data_router.message(EventProcess.Events.date)
+@data_router.message(EventProcess.Events.DATE)
 async def add_conf_date(msg: Message, state: FSMContext):
     conference: EventModel = (await state.get_data()).get("conference")
     try:
         conference = EventModel(participant=conference.participant, name=conference.name, date=msg.text)
     except ValidationError as e:
         await msg.answer(message_from_error(e))
-        await msg.answer("Проверьте правильность написания даты", reply_markup=CANCEL_KEYBOARD)
+        await msg.answer("Проверьте правильность написания даты", reply_markup=keyboards.CANCEL)
     else:
         await state.update_data(conference=conference)  
-        await msg.answer("Организатор конференции:", reply_markup=CANCEL_KEYBOARD)
-        await state.set_state(EventProcess.Events.organizator)
+        await msg.answer("Организатор конференции:", reply_markup=keyboards.CANCEL)
+        await state.set_state(EventProcess.Events.ORGANIZATOR)
 
 
-@data_router.message(EventProcess.Events.organizator)
+@data_router.message(EventProcess.Events.ORGANIZATOR)
 async def add_conf_organizator(msg: Message, state: FSMContext):
     conference: EventModel = (await state.get_data()).get("conference")
     try:
         conference = EventModel(participant=conference.participant, name=conference.name, date=conference.date, organizator=msg.text)
     except:
-        await msg.answer("Проверьте правильность написания наименования организатора", reply_markup=CANCEL_KEYBOARD)
+        await msg.answer("Проверьте правильность написания наименования организатора", reply_markup=keyboards.CANCEL)
     else:
         await state.update_data(conference=conference)
-        await msg.answer("Формат проведения:", reply_markup=FORMAT_KEYBOARD)
-        await state.set_state(EventProcess.Events.is_online)
+        await msg.answer("Формат проведения:", reply_markup=event_keyboards.FORMAT)
+        await state.set_state(EventProcess.Events.IS_ONLINE)
 
 
-@data_router.message(EventProcess.Events.is_online)
+@data_router.message(EventProcess.Events.IS_ONLINE)
 async def add_confs_handler(msg: Message, state: FSMContext):
     conference: EventModel = (await state.get_data()).get("conference")
     if msg.text == "Очный":
@@ -102,11 +102,11 @@ async def add_confs_handler(msg: Message, state: FSMContext):
     if conference.participant is None:
         conference.participant = ... # TODO добавить получение ФИО из бд
     ... # TODO добавить сохранение данных в бд
-    await msg.answer("Данные приняты", reply_markup=END_OR_ADD_KEYBOARD)
-    await state.set_state(EventProcess.Events.finish_add)
+    await msg.answer("Данные приняты", reply_markup=event_keyboards.END_OR_ADD)
+    await state.set_state(EventProcess.Events.FINISH_ADD)
 
 
-@data_router.message(F.text == "Завершить", EventProcess.Events.finish_add)
+@data_router.message(F.text == "Завершить", EventProcess.Events.FINISH_ADD)
 async def add_confs_handler(msg: Message, state: FSMContext):
-    await msg.answer("Добавление мероприятий успешно завершено!", reply_markup=EVENT_MENU_KEYBOARD)
-    await state.set_state(EventProcess.menu)
+    await msg.answer("Добавление мероприятий успешно завершено!", reply_markup=event_keyboards.MENU)
+    await state.set_state(EventProcess.MENU)

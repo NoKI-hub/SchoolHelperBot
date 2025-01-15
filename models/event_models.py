@@ -1,15 +1,22 @@
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 
+from models.user_models import validate_full_name
+
 import re
 
 
-class ConfModel(BaseModel):
-    conf_id: int = Field(default=0)
+class EventModel(BaseModel):
+    event_id: int = Field(default=0)
     name: str = Field(min_length=5, default="Conference")
     date: datetime | str = Field(default_factory=datetime.now)
     organizator: str = Field(min_length=3, default="Organizator")
     is_online: bool = Field(default=True)
+    participant: str = Field(min_length=6, max_length=60, default="Lastname Firstname Surname")    
+
+    @field_validator("participant")
+    def validate_participant(cls, value):
+        return validate_full_name(value)
 
     @field_validator("name")
     def validate_name(cls, value):

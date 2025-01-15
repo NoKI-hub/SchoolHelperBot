@@ -3,6 +3,16 @@ from pydantic import BaseModel, Field, field_validator
 import re
 
 
+def validate_full_name(value):
+    parts = value.split()
+    if len(parts) != 3:
+        raise ValueError('ФИО должно состоять из 3 слов')
+    for part in parts:
+        if not re.match(r'^[А-Яа-яЁёA-Za-z\-]+$', part):
+            raise ValueError('ФИО должно состоять из букв')
+    return value
+
+
 class UserModel(BaseModel):
     id: int
     firstname: str = Field(min_length=2, max_length=20, default="Firstname")
@@ -18,13 +28,7 @@ class UserModel(BaseModel):
         
     @field_validator("full_name")
     def validate_full_name(cls, value):
-        parts = value.split()
-        if len(parts) != 3:
-            raise ValueError('ФИО должно состоять из 3 слов')
-        for part in parts:
-            if not re.match(r'^[А-Яа-яЁёA-Za-z\-]+$', part):
-                raise ValueError('ФИО должно состоять из букв')
-        return value
+        return validate_full_name(value)
     
     def update_names(cls):
         parts = cls.full_name.split()

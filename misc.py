@@ -1,6 +1,7 @@
 from aiogram.types import Message
 from models.user_models import UserModel
 from pydantic import ValidationError
+from aiogram.filters.state import State, StatesGroup
 
 
 def message_from_error(e):
@@ -24,4 +25,12 @@ async def validation_handle(validation_result, msg: Message, answer_msg: str = "
         await msg.answer(answer_msg)
         return None
     return validation_result
-        
+
+def get_all_states(states_group):
+    result = []
+    for name, state in vars(states_group).items():
+        if isinstance(state, State):
+            result.append(state)
+        elif isinstance(state, StatesGroup):
+            result.extend(get_all_states(state))
+    return result

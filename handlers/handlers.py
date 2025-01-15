@@ -4,9 +4,9 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
 from filters import NotRegisteredFilter
-from user_states import UserStates
+from states import UserStates
 from misc import user_data_validation, validation_handle
-from keyboards import BASE_KEYBOARD
+from keyboards import base_keyboard
 
 
 router = Router()
@@ -30,12 +30,12 @@ async def start_not_registered_handler(msg : Message, state: FSMContext):
         
 
 @router.message(UserStates.names_processing)
-async def fullname_handler(msg: Message, state: FSMContext):
+async def fullname_handler(msg: Message, state: FSMContext, is_admin: bool):
     result = user_data_validation(msg)
     if await validation_handle(result, msg):
         user = result
         ... # TODO добавление данных в базу
-        await msg.answer("Регистрация прошла успешно!", reply_markup=BASE_KEYBOARD)
+        await msg.answer("Регистрация прошла успешно!", reply_markup=base_keyboard(is_admin))
         await state.set_state(UserStates.base)
 
 

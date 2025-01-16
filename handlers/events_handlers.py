@@ -1,12 +1,17 @@
 from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
+from aiogram.types.input_file import FSInputFile
 
 from keyboards import event_keyboards, keyboards, user_keyboards
 from filters import StatesFilter, TextFilter
 from states import UserStates, EventProcess
 from handlers.data_handlers import data_router
-from misc import data_validation, get_event_str, search_events
+from misc import (data_validation,
+                  get_event_str,
+                  search_events,
+                  get_all_events,
+                  load_to_file)
 from models.event_models import EventModel
 
 
@@ -94,3 +99,10 @@ async def events_list(msg: Message, state: FSMContext):
             await msg.answer(get_event_str(event))
     else:
         await msg.answer("Мероприятий не найдено")
+
+
+@event_router.message(F.text == "Получить отчет")
+async def send_all_events(msg: Message, state: FSMContext):
+    all_result = await get_all_events()
+    load_to_file(all_result)
+    await msg.answer_document(FSInputFile("events.xlsx", filename="Отчёт.xlsx"))

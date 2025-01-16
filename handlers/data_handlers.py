@@ -58,7 +58,7 @@ async def add_conf_name(msg: Message, state: FSMContext):
         await msg.answer("Проверьте правильность написания названия", reply_markup=keyboards.CANCEL)
     else:
         await state.update_data(conference=conference)
-        await msg.answer("Дата проведения в формате ДД.ММ.ГГГГ:", reply_markup=keyboards.CANCEL)
+        await msg.answer("Дата проведения в формате ДД.ММ.ГГГГ или ММ.ГГГГ:", reply_markup=keyboards.CANCEL)
         await state.set_state(EventProcess.Events.DATE)
 
 

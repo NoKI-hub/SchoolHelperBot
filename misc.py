@@ -1,8 +1,14 @@
+from aiogram.filters.state import State, StatesGroup
 from aiogram.types import Message
+
 from models.user_models import UserModel
 from models.event_models import EventModel
+
 from pydantic import ValidationError, BaseModel
-from aiogram.filters.state import State, StatesGroup
+
+from typing import Literal
+
+from datetime import datetime
 
 
 def message_from_error(e):
@@ -10,12 +16,15 @@ def message_from_error(e):
     return ", ".join(raw_message.split(", ")[1:])
 
 
-def data_validation(class_model: BaseModel, *args, **kwargs):
+def data_validation(class_model: BaseModel, error_message: str | None = None, *args, **kwargs):
     try:
         model = class_model(*args, **kwargs)
     except ValidationError as e:
         ok = False
-        result = message_from_error(e)
+        if error_message is None:
+            result = message_from_error(e)
+        else:
+            result = error_message
     else:
         ok = True
         result = model
@@ -37,6 +46,7 @@ async def validation_handle(validation_result, msg: Message, answer_msg: str = "
         return None
     return validation_result
 
+
 def get_all_states(states_group):
     result = []
     for name, state in vars(states_group).items():
@@ -53,3 +63,8 @@ def get_event_str(event: EventModel):
 {event.organizator}, {"Дистанционно" if event.is_online else "Очно"}
 {event.participant}\
 """
+
+
+async def search_events(by: Literal["date", "participant", "organizator", "name", "user_id"], value: datetime | str):
+    search_result = [EventModel()] # TODO сделать поиск в бд
+    return search_result

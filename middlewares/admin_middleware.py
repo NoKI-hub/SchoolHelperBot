@@ -2,7 +2,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message
 from typing import Dict, Any, Callable, Awaitable
 
-from config.config import ADMINS
+from config.config import settings
 
 
 class AdminMiddleware(BaseMiddleware):
@@ -12,6 +12,6 @@ class AdminMiddleware(BaseMiddleware):
             event: Message,
             data: Dict[str, Any]
     ) -> Any:
-        is_admin = event.from_user.id in ADMINS
+        is_admin = event.from_user.id in settings.ADMINS
         data["is_admin"] = is_admin
         await handler(event, data)

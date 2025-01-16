@@ -6,7 +6,7 @@ from keyboards import event_keyboards, keyboards, user_keyboards
 from filters import StatesFilter, TextFilter
 from states import UserStates, EventProcess
 from handlers.data_handlers import data_router
-from misc import data_validation, get_event_str
+from misc import data_validation, get_event_str, search_events
 from models.event_models import EventModel
 
 
@@ -46,11 +46,12 @@ async def delete_event(msg: Message, state: FSMContext):
 @event_router.message(TextFilter(["По дате", "По названию", "По организатору", "По участнику"]), EventProcess.CHOOSE_DELETE_TYPE)
 async def delete_by_date(msg: Message, state: FSMContext):
     answers = {
-        "По дате": ("Введите дату в формате ДД.ММ.ГГГГ:", EventProcess.DeleteBy.DATE),
+        "По дате": ("Введите дату в формате ДД.ММ.ГГГГ или MM.ГГГГ:", EventProcess.DeleteBy.DATE),
         "По названию": ("Введите название мероприятия:", EventProcess.DeleteBy.NAME),
         "По организатору": ("Введите организатора:", EventProcess.DeleteBy.ORGANIZATOR),
         "По участнику": ("Введите ФИО участника:", EventProcess.DeleteBy.PARTICIPANT),
     }
+    await msg.answer("Можете указывать не полные данные (кроме даты)")
     await msg.answer(answers[msg.text][0], reply_markup=keyboards.CANCEL)
     await state.set_state(answers[msg.text][1])
 
@@ -60,12 +61,20 @@ async def end_delete_event(msg: Message, state: FSMContext):
     await event_menu(msg, state)
     
 
-@event_router.message(EventProcess.DeleteBy.DATE)
-async def search_and_send_by_date(msg: Message, state: FSMContext):
-    ok, result = data_validation(EventModel, date=msg.text)
+@event_router.message(StatesFilter(EventProcess.DeleteBy))
+async def search_and_send(msg: Message, state: FSMContext):
+    if (user_state := await state.get_state()) == EventProcess.DeleteBy.DATE:
+        ok, result = data_validation(EventModel, date=msg.text)
+    else:
+        ok, result = data_validation(EventModel, error_message="Неверный формат введенных данных", name=msg.text)
     if ok:
-        date = result.date
-        search_result = [EventModel()] # TODO сделать поиск в бд
+        search_data = {
+            EventProcess.DeleteBy.DATE: ("date", result.date),
+            EventProcess.DeleteBy.NAME: ("name", result.name),
+            EventProcess.DeleteBy.ORGANIZATOR: ("organizator", result.organizator),
+            EventProcess.DeleteBy.PARTICIPANT: ("participant", result.participant)
+        }
+        search_result = await search_events(search_data[user_state][0], search_data[user_state][1])
         if search_result:
             await msg.answer("Найденные мероприятия:", reply_markup=event_keyboards.END_DELETE)
             for event in search_result:
@@ -73,4 +82,15 @@ async def search_and_send_by_date(msg: Message, state: FSMContext):
         else:
             await msg.answer("Мероприятий не найдено")
     else:
-        await msg.answer("Неверный формат даты\nПопробуйте еще раз")
+        await msg.answer(result)
+
+
+@event_router.message(F.text == "Мои мероприятия")
+async def events_list(msg: Message, state: FSMContext):
+    search_result = await search_events("user_id", msg.from_user.id)
+    await msg.answer("Ваши мероприятия:")
+    if search_result:
+        for event in search_result:
+            await msg.answer(get_event_str(event))
+    else:
+        await msg.answer("Мероприятий не найдено")

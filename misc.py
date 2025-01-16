@@ -6,9 +6,10 @@ from models.event_models import EventModel
 
 from pydantic import ValidationError, BaseModel
 
-from typing import Literal
-
+from typing import Literal, Iterable
 from datetime import datetime
+
+import pandas as pd
 
 
 def message_from_error(e):
@@ -68,3 +69,13 @@ def get_event_str(event: EventModel):
 async def search_events(by: Literal["date", "participant", "organizator", "name", "user_id"], value: datetime | str):
     search_result = [EventModel()] # TODO сделать поиск в бд
     return search_result
+
+
+async def get_all_events():
+    search_result = [EventModel()] # TODO сделать поиск в бд
+    return search_result
+
+def load_to_file(all_events: Iterable[EventModel]):
+    dataframe = pd.DataFrame([vars(event) for event in all_events])
+    with pd.ExcelWriter('events.xlsx', engine="xlsxwriter", mode='w') as writer:
+        dataframe.to_excel(writer, sheet_name="Data", index=False)

@@ -12,6 +12,7 @@ class EventModel(BaseModel):
     date: datetime | str = Field(default_factory=datetime.now)
     organizator: str = Field(min_length=3, default="Organizator")
     is_online: bool = Field(default=True)
+    type: str = Field(min_length=3, max_length=30, default="Конференция")
     participant: str | None = Field(min_length=6, max_length=60, default="Lastname Firstname Surname")    
 
     @field_validator("participant")

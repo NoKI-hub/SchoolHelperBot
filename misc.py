@@ -66,16 +66,20 @@ def get_event_str(event: EventModel):
 """
 
 
-async def search_events(by: Literal["date", "participant", "organizator", "name", "user_id"], value: datetime | str):
-    search_result = [EventModel()] # TODO сделать поиск в бд
-    return search_result
-
-
-async def get_all_events():
-    search_result = [EventModel()] # TODO сделать поиск в бд
-    return search_result
-
 def load_to_file(all_events: Iterable[EventModel]):
-    dataframe = pd.DataFrame([vars(event) for event in all_events])
+    results = []
+    for event in all_events:
+        result = vars(event[0])
+        result.pop("_sa_instance_state")
+        results.append(result)
+    dataframe = pd.DataFrame(results)
+    print(dataframe)
+    dataframe = dataframe.rename(columns={"date": "Дата",
+                              "type": "Тип мероприятия",
+                              "name": "Название",
+                              "organizator": "Организатор",
+                              "participant": "Участник",
+                              "online": "Очно/Дистанционно"})
+    dataframe = dataframe[["id", "Дата", "Тип мероприятия", "Название", "Организатор", "Участник", "Очно/Дистанционно"]]
     with pd.ExcelWriter('events.xlsx', engine="xlsxwriter", mode='w') as writer:
         dataframe.to_excel(writer, sheet_name="Data", index=False)

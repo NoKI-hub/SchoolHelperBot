@@ -18,7 +18,7 @@ class UserModel(BaseModel):
     firstname: str = Field(min_length=2, max_length=20, default="Firstname")
     surname: str = Field(min_length=2, max_length=20, default="Surname")
     lastname: str = Field(min_length=2, max_length=20, default="Lastname")
-    full_name: str = Field(min_length=6, max_length=60, default="Lastname Firstname Surname")
+    fullname: str = Field(min_length=6, max_length=60, default="Lastname Firstname Surname")
 
     @field_validator("firstname", "surname", "lastname")
     def validate_firstname(cls, value):
@@ -26,12 +26,12 @@ class UserModel(BaseModel):
             raise ValueError(f'{value.__name__} должно состоять из букв')
         return value
         
-    @field_validator("full_name")
+    @field_validator("fullname")
     def validate_full_name(cls, value):
         return validate_full_name(value)
     
     def update_names(cls):
-        parts = cls.full_name.split()
+        parts = cls.fullname.split()
         cls.lastname = parts[0]
         cls.firstname = parts[1]
         cls.surname = parts[2]

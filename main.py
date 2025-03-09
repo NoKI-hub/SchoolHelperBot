@@ -12,8 +12,12 @@ from handlers.events_handlers import event_router
 from handlers.user_data_change_handlers import change_router
 from middlewares.admin_middleware import AdminMiddleware
 
+from db.core import create_all_tables, drop_all_tables
+
 
 async def main():
+    await drop_all_tables()
+    await create_all_tables()
     bot = Bot(token=settings.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(router)

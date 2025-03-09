@@ -12,6 +12,8 @@ from misc import message_from_error
 
 from pydantic import ValidationError
 
+from db.core import insert_event, get_user
+
 
 data_router = Router()
 
@@ -29,7 +31,7 @@ async def add_conf_starting(msg: Message, state: FSMContext):
     else:
         result_text = "Название:"
         result_state = EventProcess.Events.NAME
-        await state.update_data(conference=EventModel(participant=None))
+        await state.update_data(conference=EventModel(type=msg.text, participant=None))
     await msg.answer("Введите данные", reply_markup=ReplyKeyboardRemove())
     await msg.answer(result_text, reply_markup=keyboards.CANCEL)
     await state.set_state(result_state)
@@ -100,8 +102,8 @@ async def add_confs_handler(msg: Message, state: FSMContext):
         await msg.answer("Воспользуйтесь кнопками")
         return
     if conference.participant is None:
-        conference.participant = ... # TODO добавить получение ФИО из бд
-    ... # TODO добавить сохранение данных в бд
+        conference.participant = (await get_user(msg.from_user.id))[1]
+    await insert_event(conference)
     await msg.answer("Данные приняты", reply_markup=event_keyboards.END_OR_ADD)
     await state.set_state(EventProcess.Events.FINISH_ADD)
 

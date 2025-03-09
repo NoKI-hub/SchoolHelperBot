@@ -7,6 +7,9 @@ from filters import NotRegisteredFilter
 from states import UserStates
 from misc import user_data_validation, validation_handle
 from keyboards import user_keyboards
+from models.user_models import UserModel
+
+from db.core import insert_user
 
 
 router = Router()
@@ -39,8 +42,7 @@ async def start_not_registered_handler(msg : Message, state: FSMContext):
 async def fullname_handler(msg: Message, state: FSMContext, is_admin: bool):
     result = user_data_validation(msg)
     if await validation_handle(result, msg):
-        user = result
-        ... # TODO добавление данных в базу
+        await insert_user(UserModel(id=msg.from_user.id, fullname=msg.text))
         await msg.answer("Регистрация прошла успешно!", reply_markup=user_keyboards.base(is_admin))
         await state.set_state(UserStates.BASE)
 

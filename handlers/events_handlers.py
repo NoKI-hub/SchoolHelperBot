@@ -9,10 +9,10 @@ from states import UserStates, EventProcess
 from handlers.data_handlers import data_router
 from misc import (data_validation,
                   get_event_str,
-                  search_events,
-                  get_all_events,
                   load_to_file)
 from models.event_models import EventModel
+
+from db.core import get_all_events, search_events
 
 
 event_router = Router()
@@ -87,7 +87,8 @@ async def search_and_send(msg: Message, state: FSMContext):
         else:
             await msg.answer("Мероприятий не найдено")
     else:
-        await msg.answer(result)
+        for event in result:
+            print(event)
 
 
 @event_router.message(F.text == "Мои мероприятия")

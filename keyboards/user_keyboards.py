@@ -3,7 +3,7 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 def base(is_admin: bool = False):
     builder = ReplyKeyboardBuilder()
-    builder.button(text="Изменить ФИО")
+    # builder.button(text="Изменить ФИО")
     builder.button(text="Мероприятия")
     if is_admin:
         builder.button(text="Получить отчет")

@@ -7,22 +7,20 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.default import DefaultBotProperties
 
 from config.config import settings
-from handlers.handlers import router
-from handlers.events_handlers import event_router
-from handlers.user_data_change_handlers import change_router
 from middlewares.admin_middleware import AdminMiddleware
 
-from db.core import create_all_tables, drop_all_tables
+import handlers
+
+import db
 
 
 async def main():
-    await drop_all_tables()
-    await create_all_tables()
+    await db.create_tables(if_not_exist=not settings.DEBUG)
+    if settings.DEBUG:
+        await db.user.add(db.models.User(id=1651321123, fullname="Балыкин Н. Д."))
     bot = Bot(token=settings.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher(storage=MemoryStorage())
-    dp.include_router(router)
-    dp.include_router(change_router)
-    dp.include_router(event_router)
+    dp.include_router(handlers.router)
     dp.message.middleware.register(AdminMiddleware())
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

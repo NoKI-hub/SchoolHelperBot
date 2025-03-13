@@ -1,5 +1,6 @@
 .env
 tests
-venvbot
+.venv
 __pycache__
 events.xlsx
+uv.lock

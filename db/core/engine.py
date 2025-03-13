@@ -4,7 +4,7 @@ from config.config import settings
 
 
 engine = create_async_engine(
-    settings.DB_URL,
+    settings.DB_URL if not settings.DEBUG else settings.DEBUG_DB_URL,
     echo=False,
 )
 

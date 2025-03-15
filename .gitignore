@@ -1,6 +1,7 @@
 .env
 tests
 .venv
+.python-version
 __pycache__
 events.xlsx
 uv.lock

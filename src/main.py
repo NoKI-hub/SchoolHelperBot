@@ -15,13 +15,14 @@ import db
 
 
 async def main():
-    await db.create_tables(if_not_exist=not settings.DEBUG)
-    if settings.DEBUG:
-        await db.user.add(db.models.User(id=1651321123, fullname="Балыкин Н. Д."))
+    await db.create_tables(if_not_exist=True)
+    # if settings.DEBUG:
+    #     await db.user.add(db.models.User(id=1651321123, fullname="Балыкин Н. Д."))
     bot = Bot(token=settings.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(handlers.router)
     dp.message.middleware.register(AdminMiddleware())
+    dp.callback_query.middleware.register(AdminMiddleware())
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
